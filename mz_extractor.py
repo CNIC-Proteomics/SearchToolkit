@@ -231,11 +231,11 @@ if __name__ == '__main__':
         description='Add the intensities into indentification file from the mzML reporting the ion isotopic distribution.',
         epilog='''
         Example:
-            python add_quant.py \
+            python mz_extractor.py \
                 -i "tests/test1/modules/msfragger/*.tsv" \
                 -z "tests/test1/modules/thermo_raw_parser/*.mzML" \
                 -r "tests/test1/reporter_ion_isotopic.tsv" \
-                -o "tests/test1/modules/add_quant"
+                -o "tests/test1/modules/mz_extractor"
         ''', formatter_class=RawTextHelpFormatter)
     parser.add_argument('-w',  '--n_workers', type=int, default=2, help='Number of threads/n_workers (default: %(default)s)')
     parser.add_argument('-i',  '--ident_files', required=True, help='Files with the identifications from search engine')
