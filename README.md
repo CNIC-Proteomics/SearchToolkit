@@ -10,6 +10,7 @@ python add_quant.py \
 -o "tests/test1/add_quant"
 ```
 
+<!--
 ## Include a specific path from an external repository in your own repository
 
 1. Clone Your Main Repository:
@@ -41,3 +42,4 @@ After merging the external path into your repository, commit the changes:
 git commit -m "Added specific path from external repository"
 git push
 ```
+-->
