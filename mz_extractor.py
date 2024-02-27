@@ -162,7 +162,9 @@ def print_by_experiment(df, outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=False)
     # remove obsolete file
-    ofile = f"{outdir}/{exp}.tmp"
+    name = os.path.splitext(os.path.basename(exp))[0]
+    ext = os.path.splitext(os.path.basename(exp))[-1]
+    ofile = f"{outdir}/{name}_quant{ext}.tmp"
     if os.path.isfile(ofile):
         os.remove(ofile)
     # print
