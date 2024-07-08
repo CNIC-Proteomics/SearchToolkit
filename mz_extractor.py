@@ -33,6 +33,44 @@ import Quant
 
 
 ###################
+# Parse arguments #
+###################
+
+parser = argparse.ArgumentParser(
+    description='Add the intensities into indentification file from the mzML reporting the ion isotopic distribution.',
+    epilog='''
+    Example:
+        python mz_extractor.py \
+            -i "tests/test1/modules/msfragger/*.tsv" \
+            -z "tests/test1/modules/thermo_raw_parser/*.mzML" \
+            -r "tests/test1/reporter_ion_isotopic.tsv" \
+            -o "tests/test1/modules/mz_extractor"
+    ''', formatter_class=RawTextHelpFormatter)
+parser.add_argument('-w',  '--n_workers', type=int, default=2, help='Number of threads/n_workers (default: %(default)s)')
+parser.add_argument('-i',  '--ident_files', required=True, help='Files with the identifications from search engine')
+parser.add_argument('-z',  '--mzml_files', required=True, help='mzML files')
+parser.add_argument('-r',  '--repor_ion', required=True, help='Table with the reporter ion isotopic distribution in TSV format')
+parser.add_argument('-p',  '--ppm', default=10, help='Range of error in ppm')
+parser.add_argument('-o',  '--outdir',  required=True, help='Output directory')
+parser.add_argument('-vv', dest='verbose', action='store_true', help="Increase output verbosity")
+args = parser.parse_args()
+
+# get the name of script
+script_name = os.path.splitext( os.path.basename(__file__) )[0].upper()
+
+# logging debug level. By default, info level
+if args.verbose:
+    logging.basicConfig(level=logging.DEBUG,
+                        format=script_name+' - '+str(os.getpid())+' - %(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
+else:
+    logging.basicConfig(level=logging.INFO,
+                        format=script_name+' - '+str(os.getpid())+' - %(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
+
+
+
+###################
 # Local functions #
 ###################
 def read_infile(file):
@@ -71,6 +109,7 @@ def preprocessing(params):
     ident_file = params[1]
     mzfile = params[2]
     ion_file = params[3]
+    error_ppm = params[4]
     
 
     logging.info("reading the ident file")
@@ -93,8 +132,8 @@ def preprocessing(params):
         ddf['Spectrum_File'] = spec_basename
 
     # create indata for the 
-    indata = pd.DataFrame(data=[(spec_basename, mzfile, ion_file)],
-                          columns=['spectrum_file', 'mzfile', 'quan_method'])
+    indata = pd.DataFrame(data=[(spec_basename, mzfile, ion_file, error_ppm)],
+                          columns=['spectrum_file', 'mzfile', 'quan_method', 'error_ppm'])
     
     return [ddf, indata]
     
@@ -163,7 +202,7 @@ def print_by_experiment(df, outdir):
         os.makedirs(outdir, exist_ok=False)
     # remove obsolete file
     name = os.path.splitext(os.path.basename(exp))[0]
-    ext = os.path.splitext(os.path.basename(exp))[-1]
+    ext = os.path.splitext(os.path.basename(exp))[-1] or '.tsv'
     ofile = f"{outdir}/{name}_quant{ext}.tmp"
     if os.path.isfile(ofile):
         os.remove(ofile)
@@ -195,7 +234,7 @@ def main(args):
 
     
     logging.info("combining the identification files and mzMLs...")
-    ifiles_ident_mzml = [ (x[1],x[2],y[1],args.repor_ion) for x,y in zip(ifiles_ident,ifiles_mzml) if x[0]==y[0] ]
+    ifiles_ident_mzml = [ (x[0],x[2],y[1],args.repor_ion, args.ppm) for x,y in zip(ifiles_ident,ifiles_mzml) if x[0]==y[0] ]
 
 
     logging.info("preprocessing the parameters...")
@@ -228,38 +267,6 @@ def main(args):
 
 
 if __name__ == '__main__':    
-    # parse arguments
-    parser = argparse.ArgumentParser(
-        description='Add the intensities into indentification file from the mzML reporting the ion isotopic distribution.',
-        epilog='''
-        Example:
-            python mz_extractor.py \
-                -i "tests/test1/modules/msfragger/*.tsv" \
-                -z "tests/test1/modules/thermo_raw_parser/*.mzML" \
-                -r "tests/test1/reporter_ion_isotopic.tsv" \
-                -o "tests/test1/modules/mz_extractor"
-        ''', formatter_class=RawTextHelpFormatter)
-    parser.add_argument('-w',  '--n_workers', type=int, default=2, help='Number of threads/n_workers (default: %(default)s)')
-    parser.add_argument('-i',  '--ident_files', required=True, help='Files with the identifications from search engine')
-    parser.add_argument('-z',  '--mzml_files', required=True, help='mzML files')
-    parser.add_argument('-r',  '--repor_ion', required=True, help='Table with the reporter ion isotopic distribution in TSV format')
-    parser.add_argument('-o',  '--outdir',  required=True, help='Output directory')
-    parser.add_argument('-vv', dest='verbose', action='store_true', help="Increase output verbosity")
-    args = parser.parse_args()
-
-    # get the name of script
-    script_name = os.path.splitext( os.path.basename(__file__) )[0].upper()
-    
-    # logging debug level. By default, info level
-    if args.verbose:
-        logging.basicConfig(level=logging.DEBUG,
-                            format=script_name+' - '+str(os.getpid())+' - %(asctime)s - %(levelname)s - %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
-    else:
-        logging.basicConfig(level=logging.INFO,
-                            format=script_name+' - '+str(os.getpid())+' - %(asctime)s - %(levelname)s - %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
-
     # start main function
     logging.info('start script: '+"{0}".format(" ".join([x for x in sys.argv])))
     main(args)
