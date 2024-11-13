@@ -20,6 +20,26 @@ import pandas as pd
 import re
 from pathlib import Path
 
+# Generate the Scan ID from the Spectrum File and the provided parameters
+def add_scanId(df, ifile, ids):
+
+    # add the file name without extension into 'Raw' column
+    filename = 'Spectrum_File'
+    if filename not in df.columns:
+        df[filename] = '.'.join(os.path.basename(Path(ifile)).split(".")[:-1])
+
+    # generate the scan id from the spectrum file and the given parameters
+    scan_id = 'ScanID'
+    if scan_id not in df.columns:
+        # validate that all columns in 'ids' exist in the DataFrame
+        missing_columns = [col for col in ids if col not in df.columns]
+        if missing_columns:
+            logging.error(f"Missing columns in the input file: {', '.join(missing_columns)}")
+            raise ValueError(f"Missing columns: {', '.join(missing_columns)}")
+        # combine the specified columns to create the ScanID
+        df[scan_id] = df[[filename]+ids].astype(str).agg('-'.join, axis=1)
+
+    return df
 
 def main(args):
     '''
@@ -60,20 +80,9 @@ def main(args):
     logging.info(f"File {ifile} loaded successfully with {len(df)} rows.")
 
 
-    # add the file name without extension into 'Raw' column
-    filename = 'Spectrum_File'
-    df[filename] = '.'.join(os.path.basename(Path(ifile)).split(".")[:-1])
-
-
-    # generate the scan id from the spectrum file and the given parameters
+    # if applicable, generate the Scan ID from the Spectrum File and the provided parameters
     logging.info('Generating ScanID')
-    # validate that all columns in 'ids' exist in the DataFrame
-    missing_columns = [col for col in ids if col not in df.columns]
-    if missing_columns:
-        logging.error(f"Missing columns in the input file: {', '.join(missing_columns)}")
-        raise ValueError(f"Missing columns: {', '.join(missing_columns)}")
-    # combine the specified columns to create the ScanID
-    df['ScanID'] = df[[filename]+ids].astype(str).agg('-'.join, axis=1)
+    df = add_scanId(df, ifile, ids)
 
 
     # write file
