@@ -54,10 +54,17 @@ def main(args):
     # get the base name of the input file
     # construct output file path with "_XXX" appended to the filename
     # log files
-    outdir = args.outdir if args.outdir else os.path.dirname(ifile)
-    basename = os.path.splitext(os.path.basename(ifile))[0]
-    extension = os.path.splitext(os.path.basename(ifile))[1]
-    ofile = os.path.join(outdir, f"{basename}_ScanID{extension}")
+
+    # outdir = args.outdir if args.outdir else os.path.dirname(ifile)
+    # basename = os.path.splitext(os.path.basename(ifile))[0]
+    # extension = os.path.splitext(os.path.basename(ifile))[1]
+    # ofile = os.path.join(outdir, f"{basename}_ScanID{extension}")
+
+    outdir = args.outdir if args.outdir else os.path.join(os.path.dirname(ifile), script_name.lower())
+    os.makedirs(outdir, exist_ok=False)
+    basename = os.path.basename(ifile)
+    ofile = os.path.join(outdir, basename)
+
     # get the list of column names that compose the ScanID
     ids = re.split(r'\s*,\s*', args.ids)
 
