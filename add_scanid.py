@@ -50,16 +50,7 @@ def main(args):
     # getting input parameters
     ifile = args.infile
     # get the output file
-    # if output directory is not defined, get the folder from given file
-    # get the base name of the input file
-    # construct output file path with "_XXX" appended to the filename
-    # log files
-
-    # outdir = args.outdir if args.outdir else os.path.dirname(ifile)
-    # basename = os.path.splitext(os.path.basename(ifile))[0]
-    # extension = os.path.splitext(os.path.basename(ifile))[1]
-    # ofile = os.path.join(outdir, f"{basename}_ScanID{extension}")
-
+    # if output directory is not defined, get the folder from given file + script name
     outdir = args.outdir if args.outdir else os.path.join(os.path.dirname(ifile), script_name.lower())
     os.makedirs(outdir, exist_ok=False)
     basename = os.path.basename(ifile)

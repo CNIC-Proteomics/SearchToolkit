@@ -204,8 +204,6 @@ def print_by_experiment(df, outdir):
     name = os.path.splitext(os.path.basename(exp))[0]
     ext = os.path.splitext(os.path.basename(exp))[-1] or '.tsv'
     ofile = f"{outdir}/{name}{ext}.tmp"
-    # basename = os.path.basename(exp)
-    # ofile = os.path.join(outdir, f"{basename}.tmp")
     if os.path.isfile(ofile):
         os.remove(ofile)
     # print
@@ -256,11 +254,10 @@ def main(args):
 
     logging.info("print the ID files by experiments")
     # get the outputdir. The filename by default
-    outdir = args.outdir if args.outdir else os.path.join(os.path.dirname(ifile), script_name.lower())
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.n_workers) as executor:        
         tmpfiles = executor.map( print_by_experiment,
                                 list(ddf.groupby("Spectrum_File")),
-                                itertools.repeat(outdir) )
+                                itertools.repeat(args.outdir) )
     [common.rename_tmpfile(f) for f in list(tmpfiles)] # rename tmp file deleting before the original file 
     # # begin: for debugging in Spyder
     # tmpfile = print_by_experiment(list(ddf.groupby("Spectrum_File"))[0], args.outdir)
