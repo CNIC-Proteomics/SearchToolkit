@@ -160,7 +160,7 @@ def add_quantification(n_workers, ddf, indata):
     
             logging.info("prepare the params for each spectrum_file/mzfile pair")
             # one experiment can be multiple spectrum files
-            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:            
                 params = executor.map( Quant.prepare_params, pair_spec_ie_in )
             params = [i for s in list(params) for i in s]
             # begin: for debugging in Spyder
@@ -168,7 +168,7 @@ def add_quantification(n_workers, ddf, indata):
             # end: for debugging in Spyder
     
             logging.info("extract the quantification")
-            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:            
                 quant = executor.map( Quant.extract_quantification, params )
             quant = pd.concat(quant)
             # begin: for debugging in Spyder
@@ -177,7 +177,7 @@ def add_quantification(n_workers, ddf, indata):
     
     
             logging.info("merge the quantification")
-            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as executor:            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as executor:            
                 ddf = executor.map( Quant.merge_quantification,
                                         list(ddf.groupby("Spectrum_File")),
                                         list(quant.groupby("Spectrum_File")) )
@@ -238,7 +238,7 @@ def main(args):
 
 
     logging.info("preprocessing the parameters...")
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.n_workers) as executor:            
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.n_workers) as executor:            
         pre = executor.map( preprocessing, ifiles_ident_mzml )
     pre = list(pre)
     # begin: for debugging in Spyder
@@ -254,7 +254,7 @@ def main(args):
 
     logging.info("print the ID files by experiments")
     # get the outputdir. The filename by default
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.n_workers) as executor:        
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.n_workers) as executor:        
         tmpfiles = executor.map( print_by_experiment,
                                 list(ddf.groupby("Spectrum_File")),
                                 itertools.repeat(args.outdir) )
