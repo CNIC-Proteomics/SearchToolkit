@@ -1,4 +1,14 @@
 ___
+## 1.4
+
+### Date 📅 *2025_12*
+
+### Changes in detail
+
++ Upgraded the package versions.
+
+
+___
 ## 1.3
 
 ### Date 📅 *2025_01*
